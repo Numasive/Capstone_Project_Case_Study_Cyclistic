@@ -1,0 +1,619 @@
+---
+title: "Case Study - 1  How Does a Bike-Share Navigate Speedy Success "
+author: "Shivam"
+date: "2023-10-15"
+output: html_document
+---
+
+This is my version of the case study from google analytics. Where i use the 6 steps of data analysis.
+
+
+Ask, prepare, process, analyze, share, and act.
+
+Each step will follow its own roadmap with:
+Code for the concerned part
+Guiding questions, with my process
+Key tasks, as a checklist.
+Deliverable, as a checklist.
+
+
+
+#Scenario 
+
+Introduction
+Welcome to the Cyclistic bike-share analysis case study! In this case study, you will perform many real-world tasks of a junior data
+analyst. You will work for a ctional company, Cyclistic, and meet dierent characters and team members. In order to answer the
+key business questions, you will follow the steps of the data analysis process: ask, prepare, process, analyze, share, and act.
+Along the way, the Case Study Roadmap tables — including guiding questions and key tasks — will help you stay on the right path.
+By the end of this lesson, you will have a porolio-ready case study. Download the packet and reference the details of this case
+study anytime. Then, when you begin your job hunt, your case study will be a tangible way to demonstrate your knowledge and
+skills to potential employers.
+
+Scenario
+You are a junior data analyst working in the marketing analyst team at Cyclistic, a bike-share company in Chicago. The director of marketing believes the company’s future success depends on maximizing the number of annual memberships. Therefore, your team wants to understand how casual riders and annual members use Cyclistic bikes dierently. From these insights, your team will design a new marketing strategy to convert casual riders into annual members. But rst, Cyclistic executives must approve your recommendations, so they must be backed up with compelling data insights and professional data visualizations.
+Characters and teams
+
+● Cyclistic: A bike-share program that features more than 5,800 bicycles and 600 docking stations. Cyclistic sets itself apart by also oering reclining bikes, hand tricycles, and cargo bikes, making bike-share more inclusive to people with disabilities
+and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. Cyclistic users are more likely to ride for leisure, but about 30% use them to commute to work each
+day.
+
+● Lily Moreno: The director of marketing and your manager. Moreno is responsible for the development of campaigns and initiatives to promote the bike-share program. These may include email, social media, and other channels.
+
+● Cyclistic marketing analytics team: A team of data analysts who are responsible for collecting, analyzing, and reporting data that helps guide Cyclistic marketing strategy. You joined this team six months ago and have been busy learning about Cyclistic’s mission and business goals — as well as how you, as a junior data analyst, can help Cyclistic achieve them.
+
+● Cyclistic executive team: The notoriously detail-oriented executive team will decide whether to approve the recommended marketing program.
+
+About the company
+
+In 2016, Cyclistic launched a successful bike-share oering. Since then, the program has grown to a eet of 5,824 bicycles that are geotracked and locked into a network of 692 stations across Chicago. The bikes can be unlocked from one station and returned to
+any other station in the system anytime.
+
+Until now, Cyclistic’s marketing strategy relied on building general awareness and appealing to broad consumer segments. One
+
+
+## ASK
+
+Guiding questions
+
+    What is the problem you are trying to solve?
+
+The main objective is to determine a way to build a profile for annual members and the best marketing strategies to turn casual bike riders into annual members.
+
+    How can your insights drive business decisions?
+
+The insights will help the marketing team to increase annual members.
+
+Key tasks
+
+    [x] Identify the business task
+    [x] Consider key stakeholders
+
+Deliverable
+
+    [x] A clear statement of the business task
+
+    Find the keys differences between casual and members riders and how digital midia could influence them
+
+## Prepare
+
+The project will use the data provided by this kaggle dataset. But Google also provided their own link with the same dataset but expanded with more years and station descriptions.
+
+Guiding questions
+
+    Where is your data located?
+
+The data is located in a kaggle dataset.
+
+    How is the data organized?
+
+The data is separated by month, each on it's own csv.
+
+    Are there issues with bias or credibility in this data? Does your data ROCCC?
+
+Bias isn't a problem, the population of the dataset is it's own clients as bike riders. And have full credibility for the same reason. And finally, it's ROCCC because it's reliable, original, comprehensive, current and cited.
+
+    How are you addressing licensing, privacy, security, and accessibility?
+
+The company has their own licence over the dataset. Besides that, the dataset doesn't have any personal information about the riders.
+
+    How did you verify the data’s integrity?
+
+All the files have consistent columns and each column has the correct type of data.
+
+    How does it help you answer your question?
+
+It may have some key insights about the riders and their riding style
+
+    Are there any problems with the data?
+
+It would be good to have some updated information about the bike stations. Also more information about the riders could be useful.
+
+Key tasks
+
+    [x] Download data and store it appropriately.
+    [x] Identify how it’s organized.
+    [x] Sort and filter the data.
+    [x] Determine the credibility of the data.
+
+Deliverable
+
+    [x] A description of all data sources used
+
+The main data source is 12 months (Between april 2020 and march 2021) of riding data provided by the Cicylistic company.
+
+## Process
+
+This step will prepare the data for analysis. All the csv files will be merged into one file to improve workflow
+
+Code
+
+```{r loading the library}
+library(tidyverse)
+library(lubridate)
+library(readr)
+library(ggplot2)
+library(dplyr)
+```
+
+concatenating the csv files
+
+
+```{r concatenating}
+csv_file <- list.files(path = "~/Cyclist data", recursive = TRUE, full.names=TRUE)
+
+cyclistic_combined <- do.call(rbind, lapply(csv_file, read.csv))
+
+```
+
+removing duplicate rows
+
+```{r Duplicates removing}
+cyclistic_clean1 <- cyclistic_combined[!duplicated(cyclistic_combined$ride_id), ]
+print(paste("Removed", nrow(cyclistic_combined) - nrow(cyclistic_combined), "duplicated rows"))
+```
+
+checking for na values
+
+```{r removing NA}
+sum(is.na(cyclistic_clean1))
+
+clean_df <- na.omit(cyclistic_clean1)
+head(clean_df)
+```
+rechecking for any duplicates in the dataset and removing it
+
+```{r Rechecking for duplicates}
+clean_df <- clean_df %>% 
+  distinct()
+```
+
+parsing date-time columns
+
+```{r Converting the date to correct format}
+#convert start and end time
+clean_df$started_at <- as.POSIXct(clean_df$started_at, "%Y-%m-%d %H:%M:%S",tz = "UTC")
+clean_df$ended_at <- as.POSIXct(clean_df$ended_at, "%Y-%m-%d %H:%M:%S",tz = "UTC")
+```
+
+
+```{r}
+head(clean_df)
+```
+
+Data Manupulation 
+
+Creating new columns for time to make the analysis more deeper
+
+ride_time_m
+
+represting the total time of the bike ride
+
+```{r}
+clean_df <- clean_df %>%
+    mutate(ride_time_m = as.numeric(clean_df$ended_at  - clean_df$started_at) / 60)
+summary(clean_df$ride_time_m)
+```
+as we can see the ride length is negative in some cases hence we have to treat is bad data where the ride length is negative or 0 to clearly get the idea of the actual ride length 
+```{r}
+clean_df <- clean_df %>%
+  filter(ride_time_m >= 0)
+```
+
+rechecking the summary of the clean_df
+
+```{r}
+summary(clean_df$ride_time_m)
+```
+Removing columns that are not required for the analysis such as start_lat, start_lng, end_lat, and end_long. As, we wont be using these for the analysis. 
+
+
+```{r}
+clean_df <- clean_df %>%  
+  select(-c(start_lat,start_lng,end_lat,end_lng))
+
+```
+
+```{r}
+head(clean_df)
+```
+
+seperating the yea and month into one column 
+
+```{r}
+
+
+clean_df <- clean_df %>%
+    mutate(year_month = paste(strftime(clean_df$started_at, "%Y"),
+                              "-",
+                              strftime(clean_df$started_at, "%m"),
+                              paste("(",strftime(clean_df$started_at, "%b"), ")", sep="")))
+unique(clean_df$year_month)
+
+
+```
+As we can observe the data set has 2022 - 12 included as well but the agenda here is to analyse the data from 2021 - dec  to 2022 - Nov. Hence it is important to omit the data which includes this data ?
+
+```{r}
+clean_df <- clean_df %>%
+  filter(year_month != "2022 - 12 (Dec)")
+
+
+```
+
+```{r}
+unique(clean_df$year_month)
+
+```
+
+Weekday
+
+it will be useful to analyse the travel pattern through out the week 
+
+```{r}
+
+clean_df <- clean_df %>%
+    mutate(weekday = paste(strftime(clean_df$ended_at, "%u"), "-", strftime(clean_df$ended_at, "%a")))
+
+unique(clean_df$weekday)
+
+```
+Hour of the day 
+
+lets split the time by hour of the day in order to get better idea of the frequency of bike usage during the day 
+
+```{r}
+clean_df <- clean_df %>%
+    mutate(start_hour = strftime(clean_df$ended_at, "%H"))
+unique(clean_df$start_hour)
+
+```
+
+
+
+### Guiding questions
+
+    What tools are you choosing and why?
+
+I have utilised R for the analysis because firstly i wanted to learn the lagauge and gain experience in R and second it give me access to cleaning , manupulating and anlysis tools for the such a huge data set. 
+
+    Have you ensured your data’s integrity?
+
+Yes, the data is consistent and also from the trusted source and havent been exposed to bias. 
+
+    What steps have you taken to ensure that your data is clean?
+
+Firstly i removed the NA values and then took several steps to double check and remove the duplicates although my data set doesnt show any duplicates 
+
+    How can you verify that your data is clean and ready to analyze?
+
+You can verify it by following the notebook and going through the steps taken to achieve the same
+
+    Have you documented your cleaning process so you can review and share those results?
+
+Yes it is all documented in the notebook. 
+
+Guiding questions
+
+    What tools are you choosing and why?
+
+I'm using R for this project, for two main reasons: Because of the large dataset and to gather experience with the language.
+
+    Have you ensured your data’s integrity?
+
+Yes, the data is consistent throughout the columns.
+
+    What steps have you taken to ensure that your data is clean?
+
+First the duplicated values where removed, then the columns where formatted to their correct format.
+
+    How can you verify that your data is clean and ready to analyze?
+
+It can be verified by this notebook.
+
+    Have you documented your cleaning process so you can review and share those results?
+
+Yes, it's all documented in this R notebook.
+
+Key tasks
+
+    [x] Check the data for errors.
+    [x] Choose your tools.
+    [x] Transform the data so you can work with it eectively
+    [x] Document the cleaning process.
+
+Deliverable
+
+    [x] Documentation of any cleaning or manipulation of data
+
+## Analyze
+
+The data exploration will consist of building a profile for annual members and how they differ from casual riders.
+
+Putting in a new variable with a simpler name will help reduce some typing in the future.
+
+Code 
+
+
+```{r defing the fig function for the appropraite sizing of the plot}
+
+fig <- function(width, height) {
+  options(repr.plot.width = width, repr.plot.height = height)
+} 
+
+```
+
+```{r Defining new DF for the Analysis puposes }
+
+clean_df_V1 <- clean_df
+head(clean_df_V1)
+
+```
+
+Data distribution 
+
+to identify the pattern in the data set it is important to analyse the distribution the dataset.
+
+Comparing casual riders and members 
+
+```{r Calculating the percent of count for both members and casual riders}
+clean_df_V1 %>%
+  group_by(member_casual) %>%
+  summarise(
+    count = length(ride_id),
+    '%' = (length(ride_id) / nrow(clean_df)) * 100
+  )
+
+```
+
+```{r plotting a bar chart }
+
+fig(16,8)
+ggplot(clean_df_V1, aes(member_casual, fill=member_casual)) +
+    geom_bar() + labs(x="Casuals VS Members", title="Chart 01 - Casuals VS Members distribution")
+
+```
+
+
+As we can observe on the member vs casual table, members have a higher percentage of rides as compared to casual riders approximately 19%. 
+
+Distribution by month of members and casual riders 
+
+```{r Grouping by month }
+
+clean_df_V1 %>%
+    group_by(year_month) %>%
+    summarise(count = length(ride_id),
+              '%' = (length(ride_id) / nrow(clean_df_V1)) * 100,
+              'members_p' = (sum(member_casual == "member") / length(ride_id)) * 100,
+              'casual_p' = (sum(member_casual == "casual") / length(ride_id)) * 100,
+              'Member Vs Casual Percentage Diferrence by month' = members_p - casual_p)
+
+```
+
+Plotting if on a geom Bar to analyse it better 
+
+```{r Plot of Percentage difference between the Casual Vs members rider on monthly basis }
+
+clean_df_V1 %>%
+  ggplot(aes(year_month, fill=member_casual)) +
+    geom_bar() +
+    labs(x="Months", title="Chart 02 - Distribution Casual VS Members riders by month") +
+    coord_flip()
+
+
+```
+Things to consider by this chart 
+    - Although the frequency of members riding the bike is more in total but the number of rides taken by the casual riders shown here is more because of the repeated rides by the members 
+    - The highest number of rides taken by member riders is more in august as compared to july but in the case of casual riders the july shows more number of rides in july as compared to august 
+    - differnce in rides of casual riders and members is lowest in the last semester of 2022 i.e jan and feb of 2022.
+
+The distribution looks cyclical. Let's compare it with climate data for Chicago. The data will be taken by Climate of Chicago (Daily mean °C, 2021 Dec –2022 nov).
+
+From the past 10 years the mean temprature of chicago is as following 
+
+Temp. 	27°F	30°F	39°F	49°F	59°F	70°F	76°F	75°F	67°F	55°F	43°F 32°F
+
+```{r mean climate of the year in observation}
+chicago_mean_temp <- c(-2.7, -1.1, 3.8, 9.4, 15, 21.1, 24.4, 23.8, 19.4, 12.8, 6.1, 0)
+month <- c("001 - Jan","002 - Feb","003 - Mar","004 - Apr","005 - May","006 - Jun","007 - Jul","008 - Aug","009 - Sep","010 - Oct","011 - Nov","012 - Dec")
+
+data.frame(month, chicago_mean_temp) %>%
+    ggplot(aes(x=month, y=chicago_mean_temp)) +
+    labs(x="Month", y="Mean temperature", title="Chart 02.5 - Mean temperature for Chicago (2013-2023)") +
+    geom_col()
+
+
+```
+
+The key take away is that as the temperature gets warmer the volume of rides gets higher
+
+Weekday 
+
+Analysing Data distribution by weekday 
+
+```{r}
+
+clean_df_V1 %>%
+    group_by(weekday) %>% 
+    summarise(count = length(ride_id),
+              '%' = (length(ride_id) / nrow(clean_df_V1)) * 100,
+              'members_p' = (sum(member_casual == "member") / length(ride_id)) * 100,
+              'casual_p' = (sum(member_casual == "casual") / length(ride_id)) * 100,
+              'Member Vs Casual Percentage Diferrence by Weekday' = members_p - casual_p)
+
+```
+
+Here we can observe the percentage of members riding cyling is more that casual riders on the weekdays. Where as, on weekends the percentage of casual is either more or almost equal to the member riders
+
+```{r plotting the bar chart}
+
+ggplot(clean_df_V1, aes(weekday, fill=member_casual)) +
+    geom_bar() +
+    labs(x="Weekday", title="Chart 03 - Distribution Casual Vs Member riders by weekday") +
+    coord_flip()
+
+```
+As we can observe the count of casual riders is more on the weekends and count of member riders decreases as the weekend approaches. Specifically saturday and sunday is demonstrates the high demand for the casual riders. 
+
+Hour of the day 
+
+Distribution by the hour of the day for members and casual riders 
+
+```{r}
+clean_df_V1 %>%
+    group_by(start_hour) %>% 
+    summarise(count = length(ride_id),
+          '%' = (length(ride_id) / nrow(clean_df_V1)) * 100,
+          'members_p' = (sum(member_casual == "member") / length(ride_id)) * 100,
+          'casual_p' = (sum(member_casual == "casual") / length(ride_id)) * 100,
+          'member_casual_perc_difer' = members_p - casual_p)
+
+```
+Plotting the distribution 
+
+```{r plotting the distribution by Hour of the day }
+
+clean_df_V1 %>%
+    ggplot(aes(start_hour, fill=member_casual)) +
+    labs(x="Hour of the day", title="Chart 04 - Distribution of member Vs casual by hour of the day") +
+    geom_bar()
+
+```
+It is interesting to note that although during the start of the day members as well as casual riders show the same pattern more rides towards the morning and evenings. So there is no distinct changes in the behavior of the riders as they both behave the same way when it comes to commuting for work during the week.
+
+But it will be interesting to see the members behavior during the week by hour. 
+
+
+```{r}
+
+clean_df_V1 %>%
+    ggplot(aes(start_hour, fill=member_casual)) +
+    geom_bar() +
+    labs(x="Hour of the day", title="Chart 05 - Distribution by hour on weekday basis") +
+    facet_wrap(~ weekday)
+
+```
+It is evident the ride patterns differ from the mid week to weekend 
+
+Lets divide the two to analyse and plot.
+
+```{r}
+fig(17,9)
+clean_df_V1%>%
+    mutate(type_of_weekday = ifelse(weekday == '6 - Sat' | weekday == '7 - Sun',
+                                   'weekend',
+                                   'midweek')) %>%
+    ggplot(aes(start_hour, fill=member_casual)) +
+    labs(x="Hour of the day", title="Chart 06 - Distribution by hour of the day in the midweek and weekend") +
+    geom_bar() +
+    facet_wrap(~ type_of_weekday)
+
+
+```
+Key Takeaways from the chart
+ - The count of weekday is more as compared to the weekends, Hence count doesnt show significant value for the analysis.
+ - although weekend has more smooth flow the weekdays show spikes in certain hours of the day. 
+ - weekend has more traffic bettween 11 Am to 6 Pm 
+ - On weekday the spike is during morning hours for commute and evening hours for commute.
+ 
+It's important to answer the questions. What influences member riders to use these bikes during the week for the certain amount of hours. We can assume some factors, one is that members may are people who use the bikes during they daily routine activities, like go to work (data points between 5am to 8am in midweek), go back from work (data points between 5pm to 6pm).
+
+Ride Type 
+
+It is important to analyse also the type of rides these riders are using and how data is distributed among Casual Riders and Members riders. 
+
+Lets plot a bar plot for different type of rides for casual and member riders. 
+
+```{r}
+clean_df_V1 %>%
+    group_by(rideable_type) %>% 
+    summarise(count = length(ride_id),
+          '%' = (length(ride_id) / nrow(clean_df_V1)) * 100,
+          'members_p' = (sum(member_casual == "member") / length(ride_id)) * 100,
+          'casual_p' = (sum(member_casual == "casual") / length(ride_id)) * 100,
+          'member_casual_perc_difer' = members_p - casual_p)
+
+```
+
+```{r}
+ggplot(clean_df_V1, aes(rideable_type, fill=member_casual)) +
+    labs(x="Ride type", title="Chart 07 - Distribution of types of bikes") +
+    geom_bar() +
+    coord_flip()
+```
+In 2022 the most number of bikes used were electric bikes.  Least used are docked Bikes. As, they are docked they probably used only by the casual riders for city commute or travel within the city. 
+
+In the case of electric bikes the casual riders use it more as compared to classic bikes. but where as for classic bikes the percentage of members riders are using it more as compared to electric bikes. 
+
+## Share
+
+I would have done share phase with a tableau presentation but for the purpose using R Note effectively it is better if i share my findings in this notebook itself. 
+
+Lets explore the key takeaways from the data set. 
+
+- Members have more rides as compared to the Casual riders Approximately 19 % 
+- The highest number of rides taken by member riders is more in august as compared to july but in the case of casual riders the july shows more number of rides in july as compared to august. 
+- In all months we have more members than causal riders
+- The difference in percentage between the casual and member riders is smaller in the last two months of the year 2022
+- The temperature influences the volume of rides. 
+
+It's possible to notice that the distribution of rides by month is cyclical through years, as seen on chart 02 and it's influenced by the temperature. The remaining question is: Why are there more members than casual? One plausible answer is that members have a bigger need for the bikes than casuals, as can be seen on how there are more members than casuals on cold months.
+
+Besides that, we have more bike rides on the weekends. Maybe because on those days the bikes were utilized for more recreational ways. This even more plausible when knowing that There's a bigger volume of bikers in the afternoon.
+
+Now for how members differs from casuals:
+
+Members may have the biggest volume of data, besides on saturday. On this weekday, casuals take place as having the most data points. Weekends have the biggest volume of casuals, starting on friday, a ~20% increase. We have more members during the morning, mainly between 5am and 11am. And more casuals between 11pm and 4am. There's a big increase of data points in the midweek between 6am to 8am for members. Then it fell a bit. Another big increase is from 5pm to 6pm. During the weekend we have a bigger flow of casuals between 11am to 6pm. Members have a bigger preference for classic bikes, 56% more. Casuals have more riding time than members. Riding time for members keeps unchanged during the midweek, increasing during weekends. Casuals follow a more curve distribution, peaking on sundays and valleying on wednesday/thursday.
+
+What we can take from this information is that members have a more fixed use for bikes besides casuals. Their uses is for more routine activities, like:
+
+Go to work.
+Use it as an exercise.
+
+This can be proven we state that we have more members in between 6am to 8am and at 5pm to 6pm. Also, members may have set routes when using the bikes, as proven by riding time for members keeps unchanged during the midweek, increasing during weekends. The bikes is also heavily used for recreation on the weekends, when riding time increases and casuals take place.
+
+Members also have a bigger preference for classic bikes, so they can exercise when going to work.
+
+Concluding:
+
+    Members use the bikes for fixed activities, one of those is going to work.
+    Bikes are used for recreation on the weekends.
+    Rides are influenced by temperature.
+
+
+
+Guiding questions
+
+● Were you able to answer the question of how annual members and casual riders use 
+Cyclistic bikes differently ?
+
+Yes, Causal riders have more frequency as compared to member riders on the weekend. 
+
+● What story does your data tell?
+
+Data gives us insight into riding pattern of the casual Riders and Member Rider. Also it shows us Casual riders like member riders also use these bikes to commute for work. Also, there frequency is more on the weekend.
+
+● How do your fndings relate to your original question?
+
+My finding gives us insight into how casual riders are different from the member riders. Also, they use the cycles just like members on a weekday 
+
+● Who is your audience? What is the best way to communicate with them?
+
+The stake holders and the best way is to share it on a Presentation or make a Tableau story board 
+
+● Can data visualization help you share your fndings?
+
+Most certainly yes. 
+
+
+● Is your presentation accessible to your audience?
+
+
+Yes along with my analysis. 
+
+
+## Conclusion
+
+The Google Analytics Professional Certificate gave me chance to learn alotand the R language is really useful for analyzing data but when it comes to analysing i personally prefer python.
+
+
